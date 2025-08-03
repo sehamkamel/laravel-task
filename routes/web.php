@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NoteController;
 
+Route::get('/notes-search', [NoteController::class, 'search'])->name('notes.search');
 Route::resource('notes', NoteController::class);
 
 /*
