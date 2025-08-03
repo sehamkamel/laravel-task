@@ -3,20 +3,16 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NoteController;
 
-Route::get('/notes-search', [NoteController::class, 'search'])->name('notes.search');
+// 🔹 Routes مخصصة (لازم تكون قبل resource)
+Route::get('notes/search', [NoteController::class, 'search'])->name('notes.search');
+Route::get('notes/trash', [NoteController::class, 'trash'])->name('notes.trash');
+Route::put('notes/{id}/restore', [NoteController::class, 'restore'])->name('notes.restore');
+Route::delete('notes/{id}/force-delete', [NoteController::class, 'forceDelete'])->name('notes.forceDelete');
+
+// 🔹 Routes CRUD العادية باستخدام Resource Controller
 Route::resource('notes', NoteController::class);
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
+// 🔹 الصفحة الرئيسية (welcome)
 Route::get('/', function () {
     return view('welcome');
 });

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use App\Http\Requests\NoteStoreRequest;
 use App\Http\Requests\NoteUpdateRequest;
@@ -18,24 +17,11 @@ class NoteController extends Controller
     public function index(): View
     {
         $notes = Note::latest()->paginate(5);
-          
+
         return view('notes.index', compact('notes'))
-                    ->with('i', (request()->input('page', 1) - 1) * 5);
+               ->with('i', (request()->input('page', 1) - 1) * 5);
     }
 
-    public function search(Request $request)
-{
-    $search = $request->input('search');
-
-    $notes = Note::query()
-        ->where('title', 'LIKE', "%{$search}%")
-        ->orWhere('content', 'LIKE', "%{$search}%")
-        ->paginate(5);
-
-    return view('notes.index', compact('notes', 'search'));
-}
-
-    
     /**
      * Show the form for creating a new resource.
      */
@@ -43,18 +29,18 @@ class NoteController extends Controller
     {
         return view('notes.create');
     }
-    
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(NoteStoreRequest $request): RedirectResponse
-    {   
+    {
         Note::create($request->validated());
-           
+
         return redirect()->route('notes.index')
                          ->with('success', 'Note created successfully.');
     }
-  
+
     /**
      * Display the specified resource.
      */
@@ -62,7 +48,7 @@ class NoteController extends Controller
     {
         return view('notes.show', compact('note'));
     }
-  
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -70,26 +56,61 @@ class NoteController extends Controller
     {
         return view('notes.edit', compact('note'));
     }
-  
+
     /**
      * Update the specified resource in storage.
      */
     public function update(NoteUpdateRequest $request, Note $note): RedirectResponse
     {
         $note->update($request->validated());
-          
+
         return redirect()->route('notes.index')
-                        ->with('success', 'Note updated successfully');
+                         ->with('success', 'Note updated successfully');
     }
-  
+
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(Note $note): RedirectResponse
     {
         $note->delete();
-           
+
         return redirect()->route('notes.index')
-                        ->with('success', 'Note deleted successfully');
+                         ->with('success', 'Note deleted successfully');
+    }
+
+    /**
+     * Display a listing of soft deleted notes (Trash).
+     */
+    public function trash(): View
+    {
+        $trashedNotes = Note::onlyTrashed()->paginate(5);
+
+        return view('notes.trash', compact('trashedNotes'))
+               ->with('i', (request()->input('page', 1) - 1) * 5);
+    }
+
+    /**
+     * Restore a soft deleted note.
+     */
+    public function restore($id): RedirectResponse
+    {
+        $note = Note::onlyTrashed()->findOrFail($id);
+        $note->restore();
+
+        return redirect()->route('notes.trash')
+                         ->with('success', 'Note restored successfully');
+    }
+
+    /**
+     * Permanently delete a soft deleted note.
+     */
+    public function forceDelete($id): RedirectResponse
+    {
+        $note = Note::onlyTrashed()->findOrFail($id);
+        $note->forceDelete();
+
+        return redirect()->route('notes.trash')
+                         ->with('success', 'Note permanently deleted');
     }
 }
