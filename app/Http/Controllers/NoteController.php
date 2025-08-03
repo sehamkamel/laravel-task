@@ -22,6 +22,20 @@ class NoteController extends Controller
                ->with('i', (request()->input('page', 1) - 1) * 5);
     }
 
+public function search(Request $request)
+{
+    $search = $request->input('search');
+
+    $notes = Note::query()
+        ->where('title', 'LIKE', "%{$search}%")
+        ->orWhere('content', 'LIKE', "%{$search}%")
+        ->paginate(5);
+
+    return view('notes.index', compact('notes', 'search'));
+}
+
+
+
     /**
      * Show the form for creating a new resource.
      */
